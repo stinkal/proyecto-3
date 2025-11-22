@@ -72,6 +72,7 @@
 #include <set>			 // Bibloteca para usar conjuntos ordenados.
 #include <unordered_map> // Bibloteca para usar mapas no ordenados.
 #include <vector>		 // Bibloteca para usar vectores.
+#include <limits>        // Biblioteca para usar limites numericos
 
 using namespace std;
 
@@ -555,7 +556,7 @@ void headModificarUsuarios() {
 }
 void headEliminarUsuarios() {
 	headGesUsuarios();
-	cout << "| ------------------------------------ [ 3 ] Eliminar un usuario --------------------------------------- |" << endl << endl;
+	cout << "| ------------------------------------ [ 4 ] Eliminar un usuario --------------------------------------- |" << endl << endl;
 }
 void headGesAmistades() {
 	head();
