@@ -485,6 +485,120 @@ void mostrarTodosUsuarios(const GrafoUsuarios& grafo) {
 	}
 }
 
+// | ---------- Sección de funcionalidad: 2. Gestión de Amistades  ---------- | //
+
+void agregarAmigo(GrafoUsuarios& grafo) {
+	int id1 = 0, id2 = 0;  //  declarar iD de cada usuario en la amistad
+
+	cout << "Ingrese el primer ID: ";
+	cin >> id1;
+	cout << "Ingrese el segundo ID: ";
+	cin >> id2;
+	cout << endl;
+
+	// Verificar que no sean el mismo ID
+	if (id1 == id2) {
+		cout << "Error: Un usuario no puede agregarse a si mismo.\n\n";
+		return;
+	}
+
+	// Verificar existencia de ambos usuarios
+	if (grafo.find(id1) == grafo.end()) {
+		cout << "Error: No existe un usuario con ID [" << id1 << "].\n\n";
+		return;
+	}
+	if (grafo.find(id2) == grafo.end()) {
+		cout << "Error: No existe un usuario con ID [" << id2 << "].\n\n";
+		return;
+	}
+
+	// Verificar si ya son amigos
+	if (grafo[id1].amigos.count(id2) > 0) {
+		cout << "Los usuarios ya son amigos.\n\n";
+		return;
+	}
+
+	// agregar amistad reciprocalmente
+	grafo[id1].amigos.insert(id2);
+	grafo[id2].amigos.insert(id1);
+
+	cout << "Amistad agregada exitosamente entre "
+		 << grafo[id1].nombre << " y " << grafo[id2].nombre << ".\n\n";  //  agarra los nombres associados con cada iD
+}
+
+void eliminarAmigo(GrafoUsuarios& grafo) {
+	int id1 = 0, id2 = 0;   //  iD de los dos usuarios en la amistad
+
+	cout << "Ingrese el primer ID: ";
+	cin >> id1;
+	cout << "Ingrese el segundo ID: ";
+	cin >> id2;
+	cout << endl;
+
+	// Verificar que no sean el mismo iD
+	if (id1 == id2) {
+		cout << "Error: No puede existir una amistad con uno mismo.\n\n";
+		return;
+	}
+
+	// Verificar existencia de ambos usuarios
+	if (grafo.find(id1) == grafo.end()) {
+		cout << "Error: No existe un usuario con ID [" << id1 << "].\n\n";
+		return;
+	}
+	if (grafo.find(id2) == grafo.end()) {
+		cout << "Error: No existe un usuario con ID [" << id2 << "].\n\n";
+		return;
+	}
+
+	// Verificar si NO son amigos
+	if (grafo[id1].amigos.count(id2) == 0) {
+		cout << "Los usuarios no son amigos.\n\n";
+		return;
+	}
+
+	// Eliminar amistad mutua
+	grafo[id1].amigos.erase(id2);
+	grafo[id2].amigos.erase(id1);
+
+	cout << "Amistad eliminada exitosamente entre "
+		 << grafo[id1].nombre << " y " << grafo[id2].nombre << ".\n\n";
+}
+
+void consultarAmigos(const GrafoUsuarios& grafo) {  // consulta amistades de un solo usuario indicado
+	int id = 0;  //  id del solo usuario
+
+	cout << "Ingrese el ID del usuario: ";
+	cin >> id;
+	cout << endl;
+
+	auto it = grafo.find(id);  //  iterator
+	if (it == grafo.end()) {
+		cout << "Error: No existe un usuario con ID [" << id << "].\n\n";
+		return;
+	}
+
+	const Usuario& usuario = it->second;  //  el nombre del usuario es el segundo miembro
+
+	cout << "Amigos de " << usuario.nombre << " (ID " << usuario.iD << "):\n\n";
+
+	if (usuario.amigos.empty()) {
+		cout << "Este usuario no tiene amigos registrados.\n\n";
+		return;
+	}
+
+	for (int idAmigo : usuario.amigos) {
+		auto itA = grafo.find(idAmigo);
+
+		if (itA != grafo.end()) {
+			cout << " - ID: " << itA->second.iD
+				 << " | Nombre: " << itA->second.nombre << '\n';
+		}
+	}
+
+	cout << endl;
+}
+
 // | ---------- Sección de la interfaz ---------- | //
 
 // Prototipos de las funciones de la interfaz. 
