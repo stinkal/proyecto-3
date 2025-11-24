@@ -120,6 +120,116 @@ string toStringUsuario(const Usuario& usuario) { // Función para convertir los 
 	return s.str(); // Se retorna la cadena que contiene toda la información del usuario.
 }
 
+// | ---------- Sección de funcionalidad: 0. Helper Functions  ---------- | //
+
+string toLowerStr(const string& s) { // funcion de case-insensitivity
+    string out = s;
+    for (size_t i = 0; i < out.size(); ++i) {
+        out[i] = static_cast<char>(tolower(static_cast<unsigned char>(out[i])));
+    }
+    return out;
+}
+
+vector<int> buscarCoincidenciasNombre(const GrafoUsuarios& grafo, const string& criterio) { // funcion para buscar nombres por criterio de busqueda parcial
+    vector<int> resultados;
+
+    if (criterio.empty()) return resultados;
+
+    string criterioLower = toLowerStr(criterio); // case-insensitive
+
+    for (const auto& par : grafo) {
+        const Usuario& usuario = par.second;
+        string nombreLower = toLowerStr(usuario.nombre);
+
+        // buscar substring
+        if (nombreLower.find(criterioLower) != string::npos) {
+            resultados.push_back(usuario.iD);
+        }
+    }
+
+    return resultados;
+}
+int seleccionarUsuarioDeCoincidencias(const GrafoUsuarios& grafo, const vector<int>& matches) {
+	// si la busqueda no da nada
+	if (matches.empty()) {
+        cout << "No se encontraron usuarios que coincidan con la busqueda.\n\n";
+        return -1;
+    }
+
+    // si solo hay una coincidencia, pedir confirmacion
+    if (matches.size() == 1) {
+        int id = matches[0];
+        auto it = grafo.find(id);
+        if (it == grafo.end()) return -1; // proteccion, aunque no deberia ocurrir
+
+        cout << "Se encontro 1 usuario: \n\n";
+        cout << "  ID: [" << it->second.iD << "]  Nombre: " << it->second.nombre << "\n\n";
+        cout << "¿Es este el usuario que busca? Ingrese 's' para confirmar, de lo contrario ingrese cualquier otro caracter: ";
+
+        string decision;
+        // limpiar buffer y leer linea
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        getline(cin, decision);
+        cout << endl;
+
+        if (!decision.empty() && (decision == "s" || decision == "S")) {
+            return id;
+        } else {
+            cout << "Busqueda cancelada.\n\n";
+            return -1;
+        }
+    }
+
+    // si hay varias coincidencias, listarlas y pedir seleccion
+    cout << "Se encontraron " << matches.size() << " usuarios que coinciden:\n\n";
+    for (size_t i = 0; i < matches.size(); ++i) {
+        int id = matches[i];
+        auto it = grafo.find(id);
+        if (it != grafo.end()) {
+            cout << "  [ " << (i + 1) << " ] ID: " << it->second.iD << " - " << it->second.nombre << '\n';
+        }
+    }
+    cout << "\nIngrese el numero del usuario que desea seleccionar (1-" << matches.size() << "), o 0 para cancelar: ";
+
+    int opcion = -1;
+    while (true) {
+        if (!(cin >> opcion)) {
+            cout << "Entrada invalida. Ingrese un numero entre 1 y " << matches.size() << " o 0 para cancelar: ";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+
+        if (opcion == 0) {
+            cout << "Seleccion cancelada.\n\n";
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return -1;
+        }
+
+        if (opcion < 1 || opcion > (int)matches.size()) {
+            cout << "Opcion invalida. Ingrese un numero entre 1 y " << matches.size() << " o 0 para cancelar: ";
+            continue;
+        }
+
+        // opcion valida
+        int seleccionado = matches[opcion - 1];
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << endl;
+        return seleccionado;
+    }
+}
+int buscarYSeleccionarUsuario(GrafoUsuarios& grafo, const string& prompt) { // funcion multi-uso para busqueda de usuario por nombre parcial
+    string criterio;
+    cout << prompt;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, criterio);
+    cout << endl;
+
+    vector<int> matches = buscarCoincidenciasNombre(grafo, criterio);
+
+    return seleccionarUsuarioDeCoincidencias(grafo, matches);
+}
+
 // | ---------- Sección de funcionalidad: 1. Gestión de Usuarios  ---------- | //
 
 void agregarUsuario(GrafoUsuarios& grafo) { 
