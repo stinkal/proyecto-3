@@ -73,6 +73,8 @@
 #include <unordered_map> // Bibloteca para usar mapas no ordenados.
 #include <vector>		 // Bibloteca para usar vectores.
 #include <limits>        // Biblioteca para usar limites numericos
+#include <algorithm>     // Biblioteca para ayudar manipular datos.
+#include <queue>         // Biblioteca para FIFO, particularmente util para BFS.
 
 using namespace std;
 
@@ -619,6 +621,80 @@ void consultarAmigos(const GrafoUsuarios& grafo) {  // consulta amistades de un 
 	}
 
 	cout << endl;
+}
+
+// | ---------- Sección de funcionalidad: 3. Búsqueda de Conexiones ---------- | //
+
+vector<int> ruta; 
+enum EstadoBFS { // manejo de salidas de BFS
+    OK, // salida valida
+	TRIVIAL, // el iD de destino es igual al iD de origen
+    ID_INVALIDO, // alguno de los iD's ingresados no existe
+    SIN_CONEXION // no existe una ruta entre los iD's ingresados
+};
+
+// ejecuta una busqueda BFS entre dos usuarios 
+EstadoBFS bfsRutaMasCorta(const GrafoUsuarios& grafo, int origen, int destino) {
+    ruta.clear();
+
+    // validaciones basicas
+
+    if (grafo.find(origen) == grafo.end() ||
+        grafo.find(destino) == grafo.end()) {
+        return ID_INVALIDO;
+    }
+
+    // si el origen y destino son iguales, la ruta es trivial
+    if (origen == destino) {
+        ruta.push_back(origen);
+        return TRIVIAL;
+    }
+
+    queue<int> cola; // estructura FIFO para identificar orden de busqueda
+    set<int> visitados; // guarda los nodos ya visitados
+    unordered_map<int, int> padre;  // guarda el nodo padre para reconstruir el camino
+
+    cola.push(origen); // agregar el nodo de origen a la cola
+    visitados.insert(origen);  // marcar de una vez el nodo de origen como visitado
+
+    bool encontrado = false; // solo cambia a "true" cuando el BFS esta completado
+
+    while (!cola.empty()) {
+        int actual = cola.front(); // nodo actual de busqueda empieza con el primero en la cola
+        cola.pop(); // ^ se elimina de la cola
+
+        // si llegamos al destino, termina BFS
+        if (actual == destino) {
+            encontrado = true;
+            break;
+        }
+
+        // recorrer todos los amigos (adyacentes)
+        for (int vecino : grafo.at(actual).amigos) { // amigos del nodo actual
+            if (visitados.find(vecino) == visitados.end()) {
+                visitados.insert(vecino); // marcar nodo 
+                padre[vecino] = actual; // marca el nodo padre
+                cola.push(vecino); // mover nodo al final de la cola
+            }
+        }
+    }
+
+    // si no se existe una conexion entre los usuarios
+    if (!encontrado) {
+        return SIN_CONEXION;
+    }
+
+    // reconstruir ruta desde destino hasta origen usando el mapa padre
+    int nodo = destino;
+    while (nodo != origen) {
+        ruta.push_back(nodo);
+        nodo = padre[nodo];
+    }
+    ruta.push_back(origen);
+
+    reverse(ruta.begin(), ruta.end()); // invertir la ruta
+
+    return OK;
 }
 
 // | ---------- Sección de la interfaz ---------- | //
