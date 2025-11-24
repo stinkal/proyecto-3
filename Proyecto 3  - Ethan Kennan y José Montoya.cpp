@@ -233,7 +233,7 @@ void modificarUsuarioID(GrafoUsuarios& grafo) {
 		while (true) {
 			cout << "Ingrese el nuevo ID para el usuario: "; cin >> idNuevo; cout << endl;
 
-			if (grafo.find(idNuevo) != grafo.end()) {
+			if (idNuevo != id && grafo.find(idNuevo) != grafo.end()) {
 				cout << "Error: Ya existe un usuario con ID [" << idNuevo << "]. Intentelo de nuevo." << endl;
 			}
 			else {
@@ -729,7 +729,7 @@ int  eliminarUsuarios();
 void switchEliminarUsuarios(int);
 
 void menuGesAmistades();
-int  amistades();
+int  gesAmistades();
 void switchGesAmistades(int);
 
 void menuBusConexiones();
@@ -1027,7 +1027,7 @@ void menuGesAmistades() {
 		 << "  [ 4 ] Volver atras."						<< endl << endl
 		 << "| ------------------------------------------------------------------------------------------------------ |" << endl << endl;
 }
-int amistades() {
+int gesAmistades() {
 	head();
 	headGesAmistades();
 	menuGesAmistades();
@@ -1036,20 +1036,23 @@ int amistades() {
 }
 void switchGesAmistades(int opcion) {
 	do {
-		opcion = amistades();
+		opcion = gesAmistades();
 		switch (opcion) {
 		case 1: headGesAmistades();
 			cout << "| --------------------------- [ 1 ] Establecer amistad entre dos usuarios ------------------------------ |" << endl << endl;
+			agregarAmigo(grafoUsuarios);
 
 			system("pause");
 			break;
 		case 2: headGesAmistades();
 			cout << "| ------------------------------ [ 2 ] Mostrar amistades de un usuario --------------------------------- |" << endl << endl;
+			consultarAmigos(grafoUsuarios);
 
 			system("pause");
 			break;
 		case 3: headGesAmistades();
 			cout << "| ----------------------------- [ 3 ] Eliminar amistad entre dos usuarios ------------------------------ |" << endl << endl;
+			eliminarAmigo(grafoUsuarios);
 
 			system("pause");
 			break;
