@@ -189,12 +189,12 @@ int seleccionarUsuarioDeCoincidencias(const GrafoUsuarios& grafo, const vector<i
             cout << "  [ " << (i + 1) << " ] ID: " << it->second.iD << " - " << it->second.nombre << '\n';
         }
     }
-    cout << "\nIngrese el numero del usuario que desea seleccionar (1-" << matches.size() << "), o 0 para cancelar: ";
+    cout << "\nIngrese el numero del usuario que desea seleccionar (1-" << matches.size() << "), o 0 para cancelar: ";  // <-- idk if you would prefer to keep this in the interface. I was really lowcked in while writing this block so I just kept it all within the same function, but I think it'd be better to add it to the switch function
 
     int opcion = -1;
     while (true) {
         if (!(cin >> opcion)) {
-            cout << "Entrada invalida. Ingrese un numero entre 1 y " << matches.size() << " o 0 para cancelar: ";
+            cout << "Entrada invalida. Ingrese un numero entre 1 y " << matches.size() << " o 0 para cancelar: ";  // <-- same as line 192
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
@@ -207,7 +207,7 @@ int seleccionarUsuarioDeCoincidencias(const GrafoUsuarios& grafo, const vector<i
         }
 
         if (opcion < 1 || opcion > (int)matches.size()) {
-            cout << "Opcion invalida. Ingrese un numero entre 1 y " << matches.size() << " o 0 para cancelar: ";
+            cout << "Opcion invalida. Ingrese un numero entre 1 y " << matches.size() << " o 0 para cancelar: "; // <-- same as line 192
             continue;
         }
 
@@ -369,93 +369,18 @@ void modificarUsuarioID(GrafoUsuarios& grafo) {
 void modificarUsuarioNombre(GrafoUsuarios& grafo) {
 	int idNuevo = 0;
 	string nombre = "", nombreNuevo = "";
-	vector<int> coincidentes; // Vector para almacenar los IDs de los usuarios que coinciden.
-	int opcion = 0;
+	int idSeleccionado = buscarYSeleccionarUsuario(
+		grafo,
+		"Ingrese el nombre o fragmento del usuario por modificar: "
+	);
 
-	cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-	cout << "Ingrese el nombre del usuario por modificar: "; getline(cin, nombre); cout << endl;
-
-	// Se hace una búsqueda lineal por nombre.
-	for (const auto& par : grafo) {
-		const Usuario& usuario = par.second;
-		if (usuario.nombre == nombre) {
-			coincidentes.push_back(usuario.iD);
-		}
-	}
-
-	if (coincidentes.empty()) { // Si no hay coincidencias.
-		cout << "No se encontro ningun usuario con el nombre '" << nombre << "'.\n\n";
+	if (idSeleccionado == -1) {
+		// no se encontró usuario, o el usuario cancelo la selección.
 		return;
 	}
 
-	// Si solo hay uno que coincide, tomamos su ID directamente.
-	if (coincidentes.size() == 1) {
-		int idActual = coincidentes[0];
-
-		cout << "El usuario con ese nombre fue encontrado exitosamente y es el siguiente:\n\n"
-			 << toStringUsuario(grafo[idActual]) << endl;
-
-		while (true) {
-			cout << "\nIngrese el nuevo id para el usuario: "; cin >> idNuevo; cout << endl;
-
-			// Permitimos que el usuario mantenga el mismo ID (idNuevo == idActual).
-			if (idNuevo != idActual && grafo.find(idNuevo) != grafo.end()) {
-				cout << "Error: Ya existe un usuario con ID [" << idNuevo << "]. Intentelo de nuevo." << endl;
-			}
-			else {
-				cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				cout << "Ingrese el nuevo nombre para el usuario: "; getline(cin, nombreNuevo); cout << endl;
-
-				// Copiamos el usuario, actualizamos su ID y nombre, y reinsertamos.
-				Usuario usuario = grafo[idActual];
-				usuario.iD = idNuevo;
-				usuario.nombre = nombreNuevo;
-
-				// Si el ID cambió, actualizar referencias en las listas de amigos de todos los usuarios.
-				if (idNuevo != idActual) {
-					for (auto& par : grafo) {
-						// Para cada amigo que tenga idActual, reemplazarlo por idNuevo.
-						if (par.second.amigos.erase(idActual) > 0) {
-							par.second.amigos.insert(idNuevo);
-						}
-					}
-					// Borrar el viejo y emplacear el nuevo.
-					grafo.erase(idActual);
-					grafo.emplace(idNuevo, usuario);
-				} else {
-					// Mismo ID: solo actualizar el nombre en el mapa.
-					grafo[idActual].nombre = nombreNuevo;
-				}
-
-				cout << "El usuario ha sido modificado exitosamente.\n\n";
-				return;
-			}
-		}
-	}
-
-	// Si hay varios que coinciden, listarlos y permitir seleccionar.
-	cout << "Se encontraron " << coincidentes.size() << " usuarios con el nombre '" << nombre << "':\n\n";
-	for (int i = 0; i < (int)coincidentes.size(); ++i) {
-		const Usuario& usuario = grafo[coincidentes[i]];
-		cout << "  [ " << (i + 1) << " ] ID: " << usuario.iD << " - " << usuario.nombre << '\n';
-	}
-	cout << "\nIngrese el numero del usuario que desea modificar (1-" << coincidentes.size() << "): ";
-
-	while (true) {
-		cin >> opcion;
-		if (opcion < 1 || opcion > (int)coincidentes.size()) {
-			cout << "\nOpcion invalida. Ingrese un numero entre 1 y " << coincidentes.size() << ": ";
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		}
-		else {
-			break;
-		}
-	}
-
-	int idSeleccionado = coincidentes[opcion - 1];
-
+	cout << "El usuario seleccionado es el siguiente:\n\n"
+		 << toStringUsuario(grafo[idSeleccionado]) << endl;
 	while (true) {
 		cout << "\nIngrese el nuevo id para el usuario: "; cin >> idNuevo; cout << endl;
 
