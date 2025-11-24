@@ -732,6 +732,10 @@ void menuGesAmistades();
 int  amistades();
 void switchGesAmistades(int);
 
+void menuBusConexiones();
+int busConexiones();
+void switchBusConexiones(int);
+
 void menuReportes();
 int  reportes();
 void switchReportes(int);
@@ -822,6 +826,7 @@ void switchPrincipal() {
 			system("pause");
 			break;
 		case 3: headBusConexiones();	// Funcionalidad 3: Búsqueda de Conexiones.
+			switchBusConexiones(opcion);
 
 			system("pause");
 			break;
@@ -1055,6 +1060,83 @@ void switchGesAmistades(int opcion) {
 			system("pause");
 		}
 	} while (opcion != 4);
+}
+void menuBusConexiones() {
+	cout << "  [ 1 ] Buscar ruta de conexion entre dos usuarios."							<< endl
+		 << "  [ 2 ] Volver atras."													<< endl << endl
+		 << "| ------------------------------------------------------------------------------------------------------ |" << endl << endl;
+}
+int busConexiones() {
+	head();
+	headBusConexiones();
+	menuBusConexiones();
+
+	return foot();
+}
+void switchBusConexiones(int opcion) {
+    do {
+        opcion = busConexiones();
+
+        switch (opcion) {
+        case 1: {
+            headBusConexiones();
+            cout << "| ----------------------------- [ 1 ] Buscar ruta de conexion ------------------------------------------ |" << endl << endl;
+
+            int origen = 0, destino = 0;
+
+            cout << "Ingrese el ID del usuario de origen: ";
+            cin >> origen;
+            cout << "Ingrese el ID del usuario de destino: ";
+            cin >> destino;
+            cout << endl;
+
+            EstadoBFS estado = bfsRutaMasCorta(grafoUsuarios, origen, destino);
+
+            switch (estado) {
+            case ID_INVALIDO:
+                cout << "Error: Uno u ambos de los ID's ingresados no existen.\n\n";
+                break;
+
+            case SIN_CONEXION:
+                cout << "No existe ninguna ruta de conexion entre los usuarios [" 
+                     << origen << "] y [" << destino << "].\n\n";
+                break;
+
+            case TRIVIAL:
+                cout << "Los usuarios son lo mismo. Ruta trivial:\n"
+                     << "  [" << origen << "] " << grafoUsuarios[origen].nombre << "\n\n";
+                break;
+
+            case OK:
+                cout << "Ruta mas corta encontrada entre [" << origen << "] y [" << destino << "]:\n\n  ";
+
+                for (int i = 0; i < (int)ruta.size(); ++i) {
+                    int id = ruta[i];
+                    cout << "[" << id << "] " << grafoUsuarios[id].nombre;
+
+                    if (i < (int)ruta.size() - 1) {
+                        cout << "  ->  ";
+                    }
+                }
+
+                cout << "\n\n";
+                break;
+            }
+
+            system("pause");
+            break;
+        }
+
+        case 2:
+            // volver atras
+            break;
+
+        default:
+            cout << "Opcion invalida, por favor intentelo de nuevo.\n\n";
+            system("pause");
+        }
+
+    } while (opcion != 2);
 }
 void menuReportes() {
 	cout << "  [ 1 ] Listar usuarios ordenados alfabeticamente."							<< endl
