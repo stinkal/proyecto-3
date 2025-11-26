@@ -152,7 +152,7 @@ vector<int> buscarCoincidenciasNombre(const GrafoUsuarios& grafo, const string& 
 int seleccionarUsuarioDeCoincidencias(const GrafoUsuarios& grafo, const vector<int>& matches) {
 	// si la busqueda no da nada
 	if (matches.empty()) {
-        cout << "No se encontraron usuarios que coincidan con la busqueda.\n\n";
+        cout << "No se encontraron usuarios que coincidan con la busqueda.\n\n";  // <---
         return -1;
     }
 
@@ -164,13 +164,16 @@ int seleccionarUsuarioDeCoincidencias(const GrafoUsuarios& grafo, const vector<i
 
         cout << "Se encontro 1 usuario: \n\n";
         cout << "  ID: [" << it->second.iD << "]  Nombre: " << it->second.nombre << "\n\n";
-        cout << "¿Es este el usuario que busca? Ingrese 's' para confirmar, de lo contrario ingrese cualquier otro caracter: ";
+        cout << "Es este el usuario que busca? Ingrese 's' para confirmar, de lo contrario ingrese cualquier otro caracter: ";  // <---
 
-        string decision;
-        // limpiar buffer y leer linea
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        getline(cin, decision);
-        cout << endl;
+		string decision;
+
+		// Si hay basura pendiente en el buffer, limpiarla SOLO si el siguiente char es '\n'
+		if (cin.peek() == '\n') {
+		    cin.ignore();
+		}
+		getline(cin, decision);
+		cout << endl;
 
         if (!decision.empty() && (decision == "s" || decision == "S")) {
             return id;
@@ -189,7 +192,7 @@ int seleccionarUsuarioDeCoincidencias(const GrafoUsuarios& grafo, const vector<i
             cout << "  [ " << (i + 1) << " ] ID: " << it->second.iD << " - " << it->second.nombre << '\n';
         }
     }
-    cout << "\nIngrese el numero del usuario que desea seleccionar (1-" << matches.size() << "), o 0 para cancelar: ";
+    cout << "\nIngrese el numero del usuario que desea seleccionar (1-" << matches.size() << "), o 0 para cancelar: "; 
 
     int opcion = -1;
     while (true) {
@@ -273,62 +276,21 @@ void consultarUsuarioID(GrafoUsuarios& grafo) {
 	}
 }
 void consultarUsuarioNombre(GrafoUsuarios& grafo) {
-	string nombre = "";
-	vector<int> coincidentes; // Vector para almacenar los IDs de los usuarios que coinciden.
-	bool encontrado = false;
-	int opcion = 0;
 
-	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	// funcion multi-uso de busqueda por nombre
+    int idSeleccionado = buscarYSeleccionarUsuario(
+        grafo,
+        "Ingrese el nombre o un fragmento del nombre del usuario a buscar: "               // <---
+    );
 
-	cout << "Ingrese el nombre del usuario a buscar: "; getline(cin, nombre); cout << endl;
+    if (idSeleccionado == -1) {
+        // No hay coincidencias o el usuario canceló la selección.
+        return;
+    }
 
-	// Se hace una búsqueda lineal por nombre.
-	for (const auto& par : grafo) { // par.first hace referencia al ID, y par.second al nombre del usuario.
-		const Usuario& usuario = par.second;
-
-		if (usuario.nombre == nombre) {
-			coincidentes.push_back(usuario.iD); // push_back() agrega el ID al final del vector.
-		}
-	}
-	if (coincidentes.empty()) { // Si el vector queda vacío, no se encontraron coincidencias.
-		cout << "No se encontro ningun usuario con el nombre '" << nombre << "'. Intentelo de nuevo.\n\n";
-
-		return; // Se sale de la función.
-	}
-	// Si solo hay uno que coincide, se muestra. 
-	if (coincidentes.size() == 1)  {
-		cout << "El usuario con ese nombre fue encontrado exitosamente y es el siguiente:\n\n"
-			 << toStringUsuario(grafo[coincidentes[0]]) << endl;
-
-		return;
-	}
-	// Si hay varios que coinciden, se listan todos y se deja elegir al usuario el que desea editar. 
-	cout << "Se encontraron " << coincidentes.size() << " usuarios con el nombre '" << nombre << "':\n\n";
-
-	for (int i = 0; i < coincidentes.size(); ++i) {
-		const Usuario& usuario = grafo[coincidentes[i]]; // Se obtiene el usuario correspondiente al ID almacenado en el vector.
-
-		cout << "  [ " << (i + 1) << " ] ID: " << usuario.iD << " - " << usuario.nombre << '\n';
-	}
-	cout << "\nIngrese el numero del usuario que desea consultar (1-" << coincidentes.size() << "): "; // Del 1 a n.
-
-	while (true) { // Bucle hasta que se ingrese una opción válida.
-		cin >> opcion;
-		if (opcion < 1 || opcion > coincidentes.size()) { // Validación de entradas.
-			
-			cout << "\nOpcion invalida. Ingrese un numero entre 1 y " << coincidentes.size() << ": ";
-
-			// Se limpia el estado de error y se descarta la entrada inválida.
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		}
-		else {
-			break;
-		}
-	}
-	const Usuario& seleccionado = grafo[coincidentes[opcion - 1]];
-
-	cout << "\n" << toStringUsuario(seleccionado) << endl; // Al final se muestra la información del usuario seleccionado.
+    // Mostrar la información completa del usuario encontrado.
+    cout << "Usuario encontrado:\n\n"
+         << toStringUsuario(grafo[idSeleccionado]) << endl;
 }
 void modificarUsuarioID(GrafoUsuarios& grafo) {
 	int id = 0, idNuevo = 0;
@@ -369,93 +331,18 @@ void modificarUsuarioID(GrafoUsuarios& grafo) {
 void modificarUsuarioNombre(GrafoUsuarios& grafo) {
 	int idNuevo = 0;
 	string nombre = "", nombreNuevo = "";
-	vector<int> coincidentes; // Vector para almacenar los IDs de los usuarios que coinciden.
-	int opcion = 0;
+	int idSeleccionado = buscarYSeleccionarUsuario(
+		grafo,
+		"Ingrese el nombre o un fragmento del nombre del usuario por modificar: " 			 // <---
+	);
 
-	cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-	cout << "Ingrese el nombre del usuario por modificar: "; getline(cin, nombre); cout << endl;
-
-	// Se hace una búsqueda lineal por nombre.
-	for (const auto& par : grafo) {
-		const Usuario& usuario = par.second;
-		if (usuario.nombre == nombre) {
-			coincidentes.push_back(usuario.iD);
-		}
-	}
-
-	if (coincidentes.empty()) { // Si no hay coincidencias.
-		cout << "No se encontro ningun usuario con el nombre '" << nombre << "'.\n\n";
+	if (idSeleccionado == -1) {
+		// no se encontró usuario, o el usuario cancelo la selección.
 		return;
 	}
 
-	// Si solo hay uno que coincide, tomamos su ID directamente.
-	if (coincidentes.size() == 1) {
-		int idActual = coincidentes[0];
-
-		cout << "El usuario con ese nombre fue encontrado exitosamente y es el siguiente:\n\n"
-			 << toStringUsuario(grafo[idActual]) << endl;
-
-		while (true) {
-			cout << "\nIngrese el nuevo id para el usuario: "; cin >> idNuevo; cout << endl;
-
-			// Permitimos que el usuario mantenga el mismo ID (idNuevo == idActual).
-			if (idNuevo != idActual && grafo.find(idNuevo) != grafo.end()) {
-				cout << "Error: Ya existe un usuario con ID [" << idNuevo << "]. Intentelo de nuevo." << endl;
-			}
-			else {
-				cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				cout << "Ingrese el nuevo nombre para el usuario: "; getline(cin, nombreNuevo); cout << endl;
-
-				// Copiamos el usuario, actualizamos su ID y nombre, y reinsertamos.
-				Usuario usuario = grafo[idActual];
-				usuario.iD = idNuevo;
-				usuario.nombre = nombreNuevo;
-
-				// Si el ID cambió, actualizar referencias en las listas de amigos de todos los usuarios.
-				if (idNuevo != idActual) {
-					for (auto& par : grafo) {
-						// Para cada amigo que tenga idActual, reemplazarlo por idNuevo.
-						if (par.second.amigos.erase(idActual) > 0) {
-							par.second.amigos.insert(idNuevo);
-						}
-					}
-					// Borrar el viejo y emplacear el nuevo.
-					grafo.erase(idActual);
-					grafo.emplace(idNuevo, usuario);
-				} else {
-					// Mismo ID: solo actualizar el nombre en el mapa.
-					grafo[idActual].nombre = nombreNuevo;
-				}
-
-				cout << "El usuario ha sido modificado exitosamente.\n\n";
-				return;
-			}
-		}
-	}
-
-	// Si hay varios que coinciden, listarlos y permitir seleccionar.
-	cout << "Se encontraron " << coincidentes.size() << " usuarios con el nombre '" << nombre << "':\n\n";
-	for (int i = 0; i < (int)coincidentes.size(); ++i) {
-		const Usuario& usuario = grafo[coincidentes[i]];
-		cout << "  [ " << (i + 1) << " ] ID: " << usuario.iD << " - " << usuario.nombre << '\n';
-	}
-	cout << "\nIngrese el numero del usuario que desea modificar (1-" << coincidentes.size() << "): ";
-
-	while (true) {
-		cin >> opcion;
-		if (opcion < 1 || opcion > (int)coincidentes.size()) {
-			cout << "\nOpcion invalida. Ingrese un numero entre 1 y " << coincidentes.size() << ": ";
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		}
-		else {
-			break;
-		}
-	}
-
-	int idSeleccionado = coincidentes[opcion - 1];
-
+	cout << "El usuario seleccionado es el siguiente:\n\n"
+		 << toStringUsuario(grafo[idSeleccionado]) << endl;
 	while (true) {
 		cout << "\nIngrese el nuevo id para el usuario: "; cin >> idNuevo; cout << endl;
 
@@ -624,11 +511,47 @@ void mostrarTodosUsuarios(const GrafoUsuarios& grafo) {
 void agregarAmigo(GrafoUsuarios& grafo) {
 	int id1 = 0, id2 = 0;  //  declarar iD de cada usuario en la amistad
 
-	cout << "Ingrese el primer ID: ";
-	cin >> id1;
-	cout << "Ingrese el segundo ID: ";
-	cin >> id2;
-	cout << endl;
+	    cout << "Como desea identificar al primer usuario?\n"            // <---
+         << "  [ 1 ] Buscar por ID\n"
+         << "  [ 2 ] Buscar por nombre\n"
+         << "Ingrese la opcion (1-2): ";
+    int modo1 = 0;
+    cin >> modo1;
+    cout << endl;
+
+    if (modo1 == 1) {
+        cout << "Ingrese el primer ID: ";
+        cin >> id1;
+        cout << endl;
+    } else if (modo1 == 2) {
+        int res = buscarYSeleccionarUsuario(grafo, "Ingrese el nombre o un fragmento del nombre del primer usuario: "); // <---
+        if (res == -1) return; // cancelado o no encontrado
+        id1 = res;             // resultado de buscarYSeleccionarUsuario se guarda
+    } else {
+        cout << "Opcion invalida. Operacion cancelada.\n\n";
+        return;
+    }
+
+    cout << "Como desea identificar al segundo usuario?\n"            // <---
+         << "  [ 1 ] Buscar por ID\n"
+         << "  [ 2 ] Buscar por nombre\n"
+         << "Ingrese la opcion (1-2): ";
+    int modo2 = 0;
+    cin >> modo2;
+    cout << endl;
+
+    if (modo2 == 1) {
+        cout << "Ingrese el segundo ID: ";
+        cin >> id2;
+        cout << endl;
+    } else if (modo2 == 2) {
+        int res = buscarYSeleccionarUsuario(grafo, "Ingrese el nombre o un fragmento del nombre del segundo usuario: "); // <---
+        if (res == -1) return; // cancelado o no encontrado
+        id2 = res;
+    } else {
+        cout << "Opcion invalida. Operacion cancelada.\n\n";
+        return;
+    }
 
 	// Verificar que no sean el mismo ID
 	if (id1 == id2) {
@@ -663,11 +586,47 @@ void agregarAmigo(GrafoUsuarios& grafo) {
 void eliminarAmigo(GrafoUsuarios& grafo) {
 	int id1 = 0, id2 = 0;   //  iD de los dos usuarios en la amistad
 
-	cout << "Ingrese el primer ID: ";
-	cin >> id1;
-	cout << "Ingrese el segundo ID: ";
-	cin >> id2;
-	cout << endl;
+    cout << "Como desea identificar al primer usuario?\n"            // <---
+         << "  [ 1 ] Buscar por ID\n"
+         << "  [ 2 ] Buscar por nombre\n"
+         << "Ingrese la opcion (1-2): ";
+    int modo1 = 0;
+    cin >> modo1;
+    cout << endl;
+
+    if (modo1 == 1) {
+        cout << "Ingrese el primer ID: ";
+        cin >> id1;
+        cout << endl;
+    } else if (modo1 == 2) {
+        int res = buscarYSeleccionarUsuario(grafo, "Ingrese el nombre o un fragmento del nombre del primer usuario: ");   // <---
+        if (res == -1) return;
+        id1 = res;
+    } else {
+        cout << "Opcion invalida. Operacion cancelada.\n\n";
+        return;
+    }
+
+    cout << "Como desea identificar al segundo usuario?\n"            // <---
+         << "  [ 1 ] Buscar por ID\n"
+         << "  [ 2 ] Buscar por nombre\n"
+         << "Ingrese la opcion (1-2): ";
+    int modo2 = 0;
+    cin >> modo2;
+    cout << endl;
+
+    if (modo2 == 1) {
+        cout << "Ingrese el segundo ID: ";
+        cin >> id2;
+        cout << endl;
+    } else if (modo2 == 2) {
+        int res = buscarYSeleccionarUsuario(grafo, "Ingrese el nombre o un fragmento del nombre del segundo usuario: ");
+        if (res == -1) return;
+        id2 = res;
+    } else {
+        cout << "Opcion invalida. Operacion cancelada.\n\n";
+        return;
+    }
 
 	// Verificar que no sean el mismo iD
 	if (id1 == id2) {
@@ -701,16 +660,37 @@ void eliminarAmigo(GrafoUsuarios& grafo) {
 
 void consultarAmigos(const GrafoUsuarios& grafo) {  // consulta amistades de un solo usuario indicado
 	int id = 0;  //  id del solo usuario
+		cout << "Como desea identificar al usuario?\n" 		  // <---
+         << "  [ 1 ] Buscar por ID\n"
+         << "  [ 2 ] Buscar por nombre o fragmento de nombre\n"            // <---
+         << "Ingrese la opcion (1-2): ";
+    int modo = 0;
+    cin >> modo;
+    cout << endl;
 
-	cout << "Ingrese el ID del usuario: ";
-	cin >> id;
-	cout << endl;
-
+    if (modo == 1) {
+        cout << "Ingrese el ID del usuario: ";
+        cin >> id;
+        cout << endl;
+    } else if (modo == 2) {
+        // usar la funcion de busqueda interactiva por nombre
+        int resultado = buscarYSeleccionarUsuario(const_cast<GrafoUsuarios&>(grafo), "Ingrese el nombre o fragmento del usuario a buscar: ");
+        if (resultado == -1) {
+            // no se encontro o el usuario cancelo
+            return;
+        }
+        id = resultado;
+    } else {
+        cout << "Opcion invalida. Volviendo al menu.\n\n";
+        return;
+    }
+	
 	auto it = grafo.find(id);  //  iterator
+    
 	if (it == grafo.end()) {
-		cout << "Error: No existe un usuario con ID [" << id << "].\n\n";
-		return;
-	}
+        cout << "Error: No existe un usuario con ID [" << id << "].\n\n";
+        return;
+    }
 
 	const Usuario& usuario = it->second;  //  el nombre del usuario es el segundo miembro
 
@@ -1195,13 +1175,93 @@ void switchBusConexiones(int opcion) {
             headBusConexiones();
             cout << "| ----------------------------- [ 1 ] Buscar ruta de conexion ------------------------------------------ |" << endl << endl;
 
-            int origen = 0, destino = 0;
+            int origen = -1, destino = -1;
+			int modoOrigen = 0, modoDestino = 0;
 
-            cout << "Ingrese el ID del usuario de origen: ";
-            cin >> origen;
-            cout << "Ingrese el ID del usuario de destino: ";
-            cin >> destino;
+			    cout << "Seleccione el metodo de busqueda para el usuario de origen:\n"
+                 << "  [1] Buscar por ID\n"
+                 << "  [2] Buscar por nombre o fragmento de nombre\n\n"
+                 << "Opcion: ";
+            cin >> modoOrigen;
             cout << endl;
+
+            if (modoOrigen == 1) {
+                // ----- buscar origen por ID -----
+                cout << "Ingrese el ID del usuario de origen: ";
+                cin >> origen;
+                cout << endl;
+
+                if (grafoUsuarios.find(origen) == grafoUsuarios.end()) {
+                    cout << "Error: No existe un usuario con ID [" << origen << "].\n\n";
+                    system("pause");
+                    break;
+                }
+
+            } else if (modoOrigen == 2) {
+                // ----- buscar origen por nombre -----
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                string criterio;
+
+                cout << "Ingrese el nombre o fragmento del usuario de origen: ";
+                getline(cin, criterio);
+                cout << endl;
+
+                vector<int> matches = buscarCoincidenciasNombre(grafoUsuarios, criterio);
+                origen = seleccionarUsuarioDeCoincidencias(grafoUsuarios, matches);
+
+                if (origen == -1) {
+                    cout << "Operacion cancelada.\n\n";
+                    system("pause");
+                    break;
+                }
+
+            } else {
+                cout << "Opcion invalida.\n\n";
+                system("pause");
+                break;
+            }
+            cout << "Seleccione el metodo de busqueda para el usuario de destino:\n"
+                 << "  [1] Buscar por ID\n"
+                 << "  [2] Buscar por nombre o fragmento de nombre\n\n"
+                 << "Opcion: ";
+            cin >> modoDestino;
+            cout << endl;
+
+            if (modoDestino == 1) {
+                // ----- buscar destino por ID -----
+                cout << "Ingrese el ID del usuario de destino: ";
+                cin >> destino;
+                cout << endl;
+
+                if (grafoUsuarios.find(destino) == grafoUsuarios.end()) {
+                    cout << "Error: No existe un usuario con ID [" << destino << "].\n\n";
+                    system("pause");
+                    break;
+                }
+
+            } else if (modoDestino == 2) {
+                // ----- buscar destino por nombre -----
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                string criterio;
+
+                cout << "Ingrese el nombre o fragmento del usuario de destino: ";
+                getline(cin, criterio);
+                cout << endl;
+
+                vector<int> matches = buscarCoincidenciasNombre(grafoUsuarios, criterio);
+                destino = seleccionarUsuarioDeCoincidencias(grafoUsuarios, matches);
+
+                if (destino == -1) {
+                    cout << "Operacion cancelada.\n\n";
+                    system("pause");
+                    break;
+                }
+
+            } else {
+                cout << "Opcion invalida.\n\n";
+                system("pause");
+                break;
+            }
 
             EstadoBFS estado = bfsRutaMasCorta(grafoUsuarios, origen, destino);
 
