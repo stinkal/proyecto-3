@@ -75,6 +75,7 @@
 #include <limits>        // Biblioteca para usar limites numericos
 #include <algorithm>     // Biblioteca para ayudar manipular datos.
 #include <queue>         // Biblioteca para FIFO, particularmente util para BFS.
+#include <fstream>       // Biblioteca para manejo de archivos.
 
 using namespace std;
 
@@ -336,7 +337,9 @@ void modificarUsuarioID(GrafoUsuarios& grafo) {
 			}
 			else {
 				cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				cout << "Ingrese el nuevo nombre para el usuario: "; cin >> nombre; cout << endl;
+				cout << "Ingrese el nuevo nombre para el usuario: ";
+				getline(cin, nombre);
+    			cout << endl;
 
 				Usuario usuario = grafo[id]; // Se copia el usuario actual.
 				grafo.erase(id);			 // Se elimina el usuario con el ID antiguo.
@@ -848,6 +851,104 @@ EstadoBFS bfsRutaMasCorta(const GrafoUsuarios& grafo, int origen, int destino) {
     reverse(ruta.begin(), ruta.end()); // invertir la ruta
 
     return OK;
+}
+// | ---------- Sección de funcionalidad: 4. Reportes ---------- | //
+
+void exportarReporte(const string& contenido, const string& nombreArchivo) { // recibe un sstream y un nombre de archivo como parametro
+    ofstream archivo(nombreArchivo);
+
+    if (!archivo.is_open()) {
+        cout << "Error: el archivo '" << nombreArchivo << "'esta abierto. Cierrelo para seguir.\n\n";    // <---
+        return;
+    }
+
+    archivo << contenido;
+    archivo.close();
+
+    cout << "El reporte fue exportado exitosamente al archivo '" << nombreArchivo << "'.\n\n";
+}
+
+void reporteUsuariosAlfabetico(const GrafoUsuarios& grafo) {
+    if (grafo.empty()) {
+        cout << "No hay usuarios registrados en el sistema.\n\n";
+        return;
+    }
+
+    vector<Usuario> lista;
+    lista.reserve(grafo.size());  // determina el tamaño del vector
+
+    for (const auto& par : grafo) {
+        lista.push_back(par.second); // agrega nombres de usuarios al vector
+    }
+
+    sort(lista.begin(), lista.end(), // sorteo alfabetico
+        [](const Usuario& a, const Usuario& b) {
+            string an = toLowerStr(a.nombre);
+        	string bn = toLowerStr(b.nombre);
+        	return an < bn; // compara el valor ASCII de los iniciales de los nombres (en miniscuala)
+        });
+
+    stringstream ss;
+    ss << "----------------------------- REPORTE DE USUARIOS (ORDEN ALFABETICO) -----------------------------\n\n";
+
+    for (const auto& u : lista) {
+        ss << "ID: [" << u.iD << "]  Nombre: " << u.nombre  // <--- puedes travesear con el formato
+           << "  |  Amigos: " << u.amigos.size() << "\n";
+    }
+
+    ss << "\n---------------------------------------------------------------------------------------------------\n\n";
+
+    cout << ss.str();
+
+    cout << "Desea exportar este reporte a un archivo .txt? (s/n): ";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    string dec; 
+    getline(cin, dec);
+
+    if (!dec.empty() && (dec == "s" || dec == "S")) {
+        exportarReporte(ss.str(), "reporte_alfabetico.txt");
+    }
+}
+void reporteUsuariosPorAmigos(const GrafoUsuarios& grafo) {
+    if (grafo.empty()) {
+        cout << "No hay usuarios registrados en el sistema.\n\n";
+        return;
+    }
+
+    vector<Usuario> lista;
+    lista.reserve(grafo.size());
+
+    for (const auto& par : grafo) {
+        lista.push_back(par.second);
+    }
+
+    sort(lista.begin(), lista.end(),
+        [](const Usuario& a, const Usuario& b) {
+            if (a.amigos.size() != b.amigos.size())
+                return a.amigos.size() > b.amigos.size(); // mayor → menor
+            return a.nombre < b.nombre;
+        });
+
+    stringstream ss;
+    ss << "----------------------- REPORTE DE USUARIOS (POR CANTIDAD DE AMIGOS) -----------------------\n\n";
+
+    for (const auto& u : lista) {
+        ss << "ID: [" << u.iD << "]  Nombre: " << u.nombre   // <--- puedes travesear con el formato
+           << "  |  Amigos: " << u.amigos.size() << "\n";
+    }
+
+    ss << "\n---------------------------------------------------------------------------------------------------\n\n";
+
+    cout << ss.str();
+
+    cout << "Desea exportar este reporte a un archivo .txt? (s/n): ";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    string dec; 
+    getline(cin, dec);
+
+    if (!dec.empty() && (dec == "s" || dec == "S")) {
+        exportarReporte(ss.str(), "reporte_amistades.txt");
+    }
 }
 
 // | ---------- Sección de la interfaz ---------- | //
@@ -1406,11 +1507,13 @@ void switchReportes() {
 		switch (opcion) {
 		case 1: headReportes();
 			cout << "| ------------------------- [ 1 ] Listar usuarios ordenados alfabeticamente ---------------------------- |" << endl << endl;
+			reporteUsuariosAlfabetico(grafoUsuarios);
 			
 			system("pause");
 			break;
 		case 2: headReportes();
 			cout << "| -------------- [ 2 ] Listar usuarios ordenados por cantidad de amigos (de mayor a menor) ------------- |" << endl << endl;
+			reporteUsuariosPorAmigos(grafoUsuarios);
 
 			system("pause");
 			break;
