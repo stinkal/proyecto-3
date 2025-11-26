@@ -804,31 +804,31 @@ void switchPrincipal();
 
 void menuGesUsuarios();
 int  usuarios();
-void switchGesUsuarios(int);
+void switchGesUsuarios();
 
 void menuConsultarUsuarios();
 int  consultarUsuarios();
-void switchConsultarUsuarios(int);
+void switchConsultarUsuarios();
 
 void menuModificarUsuarios();
 int  modificarUsuarios();
-void switchModificarUsuarios(int);
+void switchModificarUsuarios();
 
 void menuEliminarUsuarios();
 int  eliminarUsuarios();
-void switchEliminarUsuarios(int);
+void switchEliminarUsuarios();
 
 void menuGesAmistades();
 int  gesAmistades();
-void switchGesAmistades(int);
+void switchGesAmistades();
 
 void menuBusConexiones();
 int busConexiones();
-void switchBusConexiones(int);
+void switchBusConexiones();
 
 void menuReportes();
 int  reportes();
-void switchReportes(int);
+void switchReportes();
 
 // Implementación de las funciones de la interfaz.
 void bienvenida() {
@@ -906,22 +906,22 @@ void switchPrincipal() {
 
 		switch (opcion) {
 		case 1: headGesUsuarios();		// Funcionalidad 1: CRUD de Gestión de Usuarios.
-			switchGesUsuarios(opcion);
+			switchGesUsuarios();
 
 			system("pause");
 			break;
 		case 2: headGesAmistades();		// Funcionalidad 2: Gestión de Amistades.
-			switchGesAmistades(opcion);
+			switchGesAmistades();
 			
 			system("pause");
 			break;
 		case 3: headBusConexiones();	// Funcionalidad 3: Búsqueda de Conexiones.
-			switchBusConexiones(opcion);
+			switchBusConexiones();
 
 			system("pause");
 			break;
 		case 4: headReportes();			// Funcionalidad 4: Reportes. 
-			switchReportes(opcion);
+			switchReportes();
 
 			system("pause");
 			break;
@@ -951,7 +951,8 @@ int usuarios() {
 
 	return foot();
 }
-void switchGesUsuarios(int opcion) {
+void switchGesUsuarios() {
+	int opcion;
 	do {
 		opcion = usuarios();
 		switch (opcion) {
@@ -961,21 +962,21 @@ void switchGesUsuarios(int opcion) {
 
 			system("pause");
 			break;
-		case 2:
+		case 2: headGesUsuarios(); // interesting note: this call to headGesUsuarios was previously missing, but it appears to behave identically with or without it
 			cout << "| ------------------------------------ [ 2 ] Consultar un usuario -------------------------------------- |" << endl << endl;
-			switchConsultarUsuarios(opcion);
+			switchConsultarUsuarios();
 
 			system("pause");
 			break;
 		case 3: headGesUsuarios();
 			cout << "| ------------------------------------ [ 3 ] Modificar un usuario -------------------------------------- |" << endl << endl;
-			switchModificarUsuarios(opcion);
+			switchModificarUsuarios();
 
 			system("pause");
 			break;
 		case 4: headGesUsuarios();
 			cout << "| ------------------------------------- [ 4 ] Eliminar un usuario -------------------------------------- |" << endl << endl;
-			switchEliminarUsuarios(opcion);
+			switchEliminarUsuarios();
 
 			system("pause");
 			break;
@@ -1007,7 +1008,8 @@ int consultarUsuarios() {
 
 	return foot();
 }
-void switchConsultarUsuarios(int opcion) {
+void switchConsultarUsuarios() {
+	int opcion;
 	do {
 		opcion = consultarUsuarios();
 		switch (opcion) {
@@ -1046,7 +1048,8 @@ int modificarUsuarios() {
 
 	return foot();
 }
-void switchModificarUsuarios(int opcion) {
+void switchModificarUsuarios() {
+	int opcion;
 	do {
 		opcion = modificarUsuarios();
 		switch (opcion) {
@@ -1085,7 +1088,8 @@ int eliminarUsuarios() {
 
 	return foot();
 }
-void switchEliminarUsuarios(int opcion) {
+void switchEliminarUsuarios() {
+	int opcion;
 	do {
 		opcion = eliminarUsuarios();
 		switch (opcion) {
@@ -1124,7 +1128,8 @@ int gesAmistades() {
 
 	return foot();
 }
-void switchGesAmistades(int opcion) {
+void switchGesAmistades() {
+	int opcion;
 	do {
 		opcion = gesAmistades();
 		switch (opcion) {
@@ -1166,7 +1171,8 @@ int busConexiones() {
 
 	return foot();
 }
-void switchBusConexiones(int opcion) {
+void switchBusConexiones() {
+	int opcion;
     do {
         opcion = busConexiones();
 
@@ -1324,7 +1330,8 @@ int reportes() {
 
 	return foot();
 }
-void switchReportes(int opcion) {
+void switchReportes() {
+	int opcion;
 	do {
 		opcion = reportes();
 		switch (opcion) {
