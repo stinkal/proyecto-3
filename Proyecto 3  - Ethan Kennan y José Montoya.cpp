@@ -168,7 +168,7 @@ int seleccionarUsuarioDeCoincidencias(const GrafoUsuarios& grafo, const vector<i
 
 		string decision;
 
-		// Si hay basura pendiente en el buffer, limpiarla SOLO si el siguiente char es '\n'
+		// si hay basura pendiente en el buffer, limpiarla SOLO si el siguiente char es '\n'
 		if (cin.peek() == '\n') {
 		    cin.ignore();
 		}
@@ -239,10 +239,17 @@ void agregarUsuario(GrafoUsuarios& grafo) {
 	int id = 0;
 	string nombre = "";
 
-	cout << "Ingrese el ID unico del nuevo usuario: "; cin >> id; cout << endl;
-
-	if (grafo.find(id) != grafo.end()) { // Si lo encuentra y no es end(), significa que ya existe. end() indica que llegó al final del mapa.
+	cout << "Ingrese el ID unico del nuevo usuario: ";
+	if (!(cin >> id)){ // valida si el cin se ejecuta correctamente
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		cout << "\nEntrada invalida. Por favor ingresar un numero entero.\n\n";
+		return;
+	}
+	else if (grafo.find(id) != grafo.end()) { // Si lo encuentra y no es end(), significa que ya existe. end() indica que llegó al final del mapa.
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
 		cout << "Error: Ya existe un usuario con ID [" << id << "]. Intentelo de nuevo." << endl;
+		return;
 	}
 	else {
 		cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Se limpia el buffer antes de usar getline().
@@ -255,7 +262,7 @@ void agregarUsuario(GrafoUsuarios& grafo) {
 	}
 }
 // Agregar usuario: devuelve true si se pudo, false si el ID ya existe.
-bool agregarUsuario(GrafoUsuarios& grafo, int id, const string& nombre) {																						// ESTE ES SOLO DE PRUEBA
+bool agregarUsuarioPRUEBA(GrafoUsuarios& grafo, int id, const string& nombre) {																						// ESTE ES SOLO DE PRUEBA
 	if (grafo.find(id) != grafo.end()) {
 		return false; // ID repetido
 	}
@@ -265,7 +272,13 @@ bool agregarUsuario(GrafoUsuarios& grafo, int id, const string& nombre) {							
 void consultarUsuarioID(GrafoUsuarios& grafo) { 
 	int id = 0;
 
-	cout << "Ingrese el ID unico del usuario a buscar: "; cin >> id; cout << endl;
+	cout << "Ingrese el ID unico del usuario a buscar: "; 
+	if (!(cin >> id)){ // valida si el input es un entero
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		cout << "\nEntrada invalida. Por favor ingresar un numero entero.\n\n";
+		return;
+	}
 
 	if (grafo.find(id) != grafo.end()) {
 		cout << "El usuario con el ID [" << id << "] fue encontrado exitosamente y es el siguiente:\n\n"
@@ -296,17 +309,30 @@ void modificarUsuarioID(GrafoUsuarios& grafo) {
 	int id = 0, idNuevo = 0;
 	string nombre = "";
 
-	cout << "Ingrese el ID unico del usuario por modificar: "; cin >> id; cout << endl;
+	cout << "Ingrese el ID unico del usuario por modificar: ";
+	if (!(cin >> id)){ // valida si el cin se ejecuta correctamente
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		cout << "\nEntrada invalida. Por favor ingresar un numero entero.\n\n";
+		return;
+	}
 
 	if (grafo.find(id) != grafo.end()) {
 		cout << "El usuario con el ID [" << id << "] fue encontrado exitosamente y es el siguiente:\n\n"
 			 << toStringUsuario(grafo[id]) << endl; // Se muestra la información del usuario encontrado.
 
 		while (true) {
-			cout << "Ingrese el nuevo ID para el usuario: "; cin >> idNuevo; cout << endl;
+			cout << "Ingrese el nuevo ID para el usuario: ";
+			if (!(cin >> idNuevo)){ // valida si el cin se ejecuta correctamente
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "\nEntrada invalida. Por favor ingresar un numero entero.\n\n";
+			}
 
-			if (idNuevo != id && grafo.find(idNuevo) != grafo.end()) {
+			else if (idNuevo != id && grafo.find(idNuevo) != grafo.end()) {
 				cout << "Error: Ya existe un usuario con ID [" << idNuevo << "]. Intentelo de nuevo." << endl;
+				cin.clear();
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			}
 			else {
 				cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -344,10 +370,17 @@ void modificarUsuarioNombre(GrafoUsuarios& grafo) {
 	cout << "El usuario seleccionado es el siguiente:\n\n"
 		 << toStringUsuario(grafo[idSeleccionado]) << endl;
 	while (true) {
-		cout << "\nIngrese el nuevo id para el usuario: "; cin >> idNuevo; cout << endl;
+		cout << "\nIngrese el nuevo id para el usuario: ";
+		if (!(cin >> idNuevo)){ // valida si el cin es un entero
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "\nEntrada invalida. Por favor ingresar un numero entero.\n\n";
+		}
 
-		if (idNuevo != idSeleccionado && grafo.find(idNuevo) != grafo.end()) {
+		else if (idNuevo != idSeleccionado && grafo.find(idNuevo) != grafo.end()) {
 			cout << "Error: Ya existe un usuario con ID [" << idNuevo << "]. Intentelo de nuevo." << endl;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
 		}
 		else {
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -375,12 +408,17 @@ void modificarUsuarioNombre(GrafoUsuarios& grafo) {
 	}
 }
 void eliminarUsuarioID(GrafoUsuarios& grafo) {
-	int id = 0, idNuevo = 0;
+	int id = 0;
 	string nombre = "", decision = "";
 
-	cout << "Ingrese el ID unico del usuario por eliminar: "; cin >> id; cout << endl;
+	cout << "Ingrese el ID unico del usuario por eliminar: ";
+	if (!(cin >> id)){ // valida si el cin es un entero
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "\nEntrada invalida. Por favor ingresar un numero entero.\n\n";
+		}
 
-	if (grafo.find(id) != grafo.end()) {
+	else if (grafo.find(id) != grafo.end()) {
 		cout << "El usuario con el ID [" << id << "] fue encontrado exitosamente y es el siguiente:\n\n"
 			<< toStringUsuario(grafo[id]) << endl; // Se muestra la información del usuario encontrado.
 
@@ -521,7 +559,12 @@ void agregarAmigo(GrafoUsuarios& grafo) {
 
     if (modo1 == 1) {
         cout << "Ingrese el primer ID: ";
-        cin >> id1;
+        if (!(cin >> id1)){ // valida si el cin es un entero
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "\nEntrada invalida. Por favor ingresar un numero entero.\n\n";
+			return;
+		}
         cout << endl;
     } else if (modo1 == 2) {
         int res = buscarYSeleccionarUsuario(grafo, "Ingrese el nombre o un fragmento del nombre del primer usuario: "); // <---
@@ -542,7 +585,12 @@ void agregarAmigo(GrafoUsuarios& grafo) {
 
     if (modo2 == 1) {
         cout << "Ingrese el segundo ID: ";
-        cin >> id2;
+        if (!(cin >> id2)){ // valida si el cin es un entero
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "\nEntrada invalida. Por favor ingresar un numero entero.\n\n";
+			return;
+		}
         cout << endl;
     } else if (modo2 == 2) {
         int res = buscarYSeleccionarUsuario(grafo, "Ingrese el nombre o un fragmento del nombre del segundo usuario: "); // <---
@@ -596,7 +644,12 @@ void eliminarAmigo(GrafoUsuarios& grafo) {
 
     if (modo1 == 1) {
         cout << "Ingrese el primer ID: ";
-        cin >> id1;
+        if (!(cin >> id1)){ // valida si el cin es un entero
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "\nEntrada invalida. Por favor ingresar un numero entero.\n\n";
+			return;
+		}
         cout << endl;
     } else if (modo1 == 2) {
         int res = buscarYSeleccionarUsuario(grafo, "Ingrese el nombre o un fragmento del nombre del primer usuario: ");   // <---
@@ -617,7 +670,12 @@ void eliminarAmigo(GrafoUsuarios& grafo) {
 
     if (modo2 == 1) {
         cout << "Ingrese el segundo ID: ";
-        cin >> id2;
+        if (!(cin >> id2)){ // valida si el cin es un entero
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "\nEntrada invalida. Por favor ingresar un numero entero.\n\n";
+			return;
+		}
         cout << endl;
     } else if (modo2 == 2) {
         int res = buscarYSeleccionarUsuario(grafo, "Ingrese el nombre o un fragmento del nombre del segundo usuario: ");
@@ -670,7 +728,12 @@ void consultarAmigos(const GrafoUsuarios& grafo) {  // consulta amistades de un 
 
     if (modo == 1) {
         cout << "Ingrese el ID del usuario: ";
-        cin >> id;
+        if (!(cin >> id)){ // valida si el cin es un entero
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "\nEntrada invalida. Por favor ingresar un numero entero.\n\n";
+			return;
+		}
         cout << endl;
     } else if (modo == 2) {
         // usar la funcion de busqueda interactiva por nombre
@@ -835,11 +898,11 @@ void bienvenida() {
 	cout << "| ---------------------- Bienvenidos al simulador de una red social - Kentoya !!! ---------------------- |" << endl << endl;
 	
 	// grafo de usuarios de prueba:
-	agregarUsuario(grafoUsuarios, 1, "Walter");
-	agregarUsuario(grafoUsuarios, 2, "Jesse");
-	agregarUsuario(grafoUsuarios, 3, "Gus");
-	agregarUsuario(grafoUsuarios, 4, "Saul");
-	agregarUsuario(grafoUsuarios, 5, "Walter");
+	agregarUsuarioPRUEBA(grafoUsuarios, 1, "Walter");
+	agregarUsuarioPRUEBA(grafoUsuarios, 2, "Jesse");
+	agregarUsuarioPRUEBA(grafoUsuarios, 3, "Gus");
+	agregarUsuarioPRUEBA(grafoUsuarios, 4, "Saul");
+	agregarUsuarioPRUEBA(grafoUsuarios, 5, "Walter");
 
 	system("pause");
 	switchPrincipal();
@@ -879,7 +942,13 @@ void headReportes() {
 int foot() {
 	int opcion;
 
-	cout << "Digite el numero de opcion a la cual desea ingresar: "; cin >> opcion; cout << endl;
+	cout << "Digite el numero de opcion a la cual desea ingresar: ";
+	if (!(cin >> opcion)) { // llama cin; si funciona correctamente, salta el if
+		cin.clear(); //limpia la funcion
+		cin.ignore(numeric_limits<streamsize>::max(), '\n'); //limpiar input buffer
+		return -1; // llama default caso (error)
+	}
+	cout << endl;
 
 	return opcion;
 }
